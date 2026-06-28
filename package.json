@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "axios": "^1.18.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0",
+    "react-leaflet-draw": "^0.21.0",
+    "recharts": "^3.9.0"
+  }
+}
