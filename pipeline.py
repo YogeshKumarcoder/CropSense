@@ -114,16 +114,16 @@ def calculate_stress_index(ndvi_data: dict, weather_data: dict):
     temp = weather_data['temperature']
     humidity = weather_data['humidity']
 
-    temp_stress = max(0, (temp - 35) / 10)
-    humidity_stress = max(0, (40 - humidity) / 40)
+    temp_stress = max(0, (temp - 30) / 15)
+    humidity_stress = max(0, (50 - humidity) / 50)
     weather_stress = (temp_stress + humidity_stress) / 2
 
     crop_stress_index = (stressed_pct/100 * 0.6) + (weather_stress * 0.4)
 
-    if crop_stress_index > 0.6:
+    if crop_stress_index > 0.5:
         alert = "HIGH"
         recommendation = "Immediate irrigation needed!"
-    elif crop_stress_index > 0.3:
+    elif crop_stress_index > 0.2:
         alert = "MODERATE"
         recommendation = "Monitor closely"
     else:
