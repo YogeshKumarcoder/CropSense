@@ -15,29 +15,8 @@ expensive, time-consuming, and not scalable. CropSense provides
 and live weather data fusion.
 
 ## 🏗️ System Architecture
-Sentinel-2 Satellite (ESA)          OpenWeatherMap API
 
-↓                                   ↓
-
-NDVI Extraction              Live Weather Features
-
-(B04 + B08 bands)           (temp, humidity, wind)
-
-↓                                   ↓
-
-└──────── Multimodal Fusion ────────┘
-
-↓
-
-Crop Stress Index
-
-↓
-
-FastAPI REST Backend
-
-↓
-
-React Dashboard (Live)
+![CropSense Architecture](architecture.png)
 
 ## ✨ Features
 - 🛰️ **Real Sentinel-2 Data** — ESA Copernicus satellite imagery

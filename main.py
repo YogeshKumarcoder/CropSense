@@ -3,6 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pipeline import get_ndvi, get_weather, calculate_stress_index
 from datetime import datetime
+import numpy as np
+from tensorflow.keras.models import load_model
+import json
+
+# Model aur scaler load karo
+lstm_model = load_model('cropsense_lstm.keras')
+with open('scaler_params.json', 'r') as f:
+    scaler = json.load(f)
+
+ndvi_min = scaler['ndvi_min']
+ndvi_max = scaler['ndvi_max']   
 
 app = FastAPI(
     title="CropSense API",
@@ -66,3 +77,26 @@ def analyze_region(request: AnalyzeRequest):
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+class PredictRequest(BaseModel):
+    last_3_months: list
+
+@app.post("/predict")
+def predict_next_month(request: PredictRequest):
+    if len(request.last_3_months) != 3:
+        return {"error": "Exactly 3 months ka data chahiye"}
+    
+    # Normalize
+    normalized = [(x - ndvi_min)/(ndvi_max - ndvi_min) 
+                  for x in request.last_3_months]
+    
+    # Predict
+    input_array = np.array(normalized).reshape(1, 3, 1)
+    pred_norm = lstm_model.predict(input_array)[0][0]
+    pred_real = float(pred_norm * (ndvi_max - ndvi_min) + ndvi_min)
+    
+    return {
+        "input": request.last_3_months,
+        "predicted_next_month_ndvi": round(pred_real, 2),
+        "unit": "healthy_crop_percentage"
+    }
