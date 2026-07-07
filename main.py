@@ -6,6 +6,8 @@ from datetime import datetime
 import numpy as np
 from tensorflow.keras.models import load_model
 import json
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 # Model aur scaler load karo
 lstm_model = load_model('cropsense_lstm.keras')
@@ -79,24 +81,48 @@ def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 class PredictRequest(BaseModel):
-    last_3_months: list
+    bbox: list
 
 @app.post("/predict")
 def predict_next_month(request: PredictRequest):
-    if len(request.last_3_months) != 3:
-        return {"error": "Exactly 3 months ka data chahiye"}
     
-    # Normalize
-    normalized = [(x - ndvi_min)/(ndvi_max - ndvi_min) 
-                  for x in request.last_3_months]
+    # Current month aur pichle 2 months calculate karo
+    today = datetime.now()
+    months = []
     
-    # Predict
+    for i in range(2, -1, -1):  # 2 months ago, 1 month ago, current
+        month_date = today - relativedelta(months=i)
+        start = month_date.replace(day=1).strftime("%Y-%m-%d")
+        # Month ka last day
+        if month_date.month == 12:
+            end = month_date.replace(day=31).strftime("%Y-%m-%d")
+        else:
+            end = (month_date.replace(day=1) + relativedelta(months=1) - timedelta(days=1)).strftime("%Y-%m-%d")
+        months.append((start, end))
+    
+    # Har month ka NDVI fetch karo
+    ndvi_values = []
+    for start, end in months:
+        ndvi_result = get_ndvi(request.bbox, start, end)
+        if ndvi_result['status'] == 'success':
+            ndvi_values.append(ndvi_result['healthy_percentage'])
+        else:
+            ndvi_values.append(0)
+    
+    # LSTM predict karo
+    ndvi_min_val = 0
+    ndvi_max_val = 72.4
+    
+    normalized = [(x - ndvi_min_val)/(ndvi_max_val - ndvi_min_val) 
+                  for x in ndvi_values]
+    
     input_array = np.array(normalized).reshape(1, 3, 1)
-    pred_norm = lstm_model.predict(input_array)[0][0]
-    pred_real = float(pred_norm * (ndvi_max - ndvi_min) + ndvi_min)
+    pred_norm = float(lstm_model.predict(input_array, verbose=0)[0][0])
+    pred_real = pred_norm * (ndvi_max_val - ndvi_min_val) + ndvi_min_val
     
     return {
-        "input": request.last_3_months,
-        "predicted_next_month_ndvi": round(pred_real, 2),
+        "last_3_months_ndvi": ndvi_values,
+        "predicted_next_month": round(pred_real, 2),
+        "months_used": [m[0] for m in months],
         "unit": "healthy_crop_percentage"
     }
