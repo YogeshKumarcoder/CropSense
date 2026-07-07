@@ -37,6 +37,18 @@ and live weather data fusion.
 | Backend | FastAPI + Python |
 | Frontend | React + Leaflet.js |
 
+## 🤖 ML Models
+
+### 1. Multimodal Fusion Model
+- Weighted combination: Satellite (60%) + Weather (40%)
+- Output: Crop Stress Index
+
+### 2. LSTM Yield Prediction
+- Training data: 4 years Sentinel-2 (2022-2024)
+- Architecture: LSTM(50) + Dense(1)
+- Technique: Early stopping (overfitting prevention)
+- Validated against real crop calendar data
+
 ## 📊 Sample Output — Mehrawal, Aligarh (Nov 2024)
 ```json
 {
@@ -54,6 +66,8 @@ and live weather data fusion.
   }
 }
 ```
+
+
 
 ## 🚀 Quick Start
 
