@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pipeline import get_ndvi, get_weather, calculate_stress_index
+from pipeline import get_ndvi, get_weather, calculate_stress_index, irrigation_recommendation
 from datetime import datetime
 import numpy as np
 from tensorflow.keras.models import load_model
@@ -125,4 +125,30 @@ def predict_next_month(request: PredictRequest):
         "predicted_next_month": round(pred_real, 2),
         "months_used": [m[0] for m in months],
         "unit": "healthy_crop_percentage"
+    }
+
+class IrrigationRequest(BaseModel):
+    bbox: list
+    crop_type: str
+    time_start: str
+    time_end: str
+
+@app.post("/irrigation")
+def get_irrigation_recommendation(request: IrrigationRequest):
+    lat = (request.bbox[1] + request.bbox[3]) / 2
+    lon = (request.bbox[0] + request.bbox[2]) / 2
+    
+    ndvi_data = get_ndvi(request.bbox, request.time_start, request.time_end)
+    weather_data = get_weather(lat, lon)
+    
+    recommendation = irrigation_recommendation(
+        ndvi_data, weather_data, request.crop_type
+    )
+    
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "location": {"bbox": request.bbox},
+        "satellite_data": ndvi_data,
+        "weather_data": weather_data,
+        "irrigation": recommendation
     }

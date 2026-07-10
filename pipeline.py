@@ -135,3 +135,93 @@ def calculate_stress_index(ndvi_data: dict, weather_data: dict):
         "alert_level": alert,
         "recommendation": recommendation
     }
+
+CROP_WATER_NEEDS = {
+    # HIGH water
+    "dhan": "high",
+    
+    # MODERATE water
+    "gehun": "moderate",
+    "maize": "moderate",
+    "aalu": "moderate",
+    "tamatar": "moderate",
+    "matar": "moderate",
+    "kharbuj": "moderate",
+    "moong": "moderate",
+    "gobhi": "moderate",
+    
+    # LOW water
+    "bajra": "low",
+    "jwar": "low",
+    "arhar": "low",
+    "baigan": "low",
+}
+
+def irrigation_recommendation(ndvi_data, weather_data, crop_type):
+    
+    crop = crop_type.lower()
+    water_need = CROP_WATER_NEEDS.get(crop, "moderate")
+    
+    healthy = ndvi_data['healthy_percentage']
+    stressed = ndvi_data['stressed_percentage']
+    temp = weather_data['temperature']
+    humidity = weather_data['humidity']
+    condition = weather_data['condition'].lower()
+    
+    # Barish check karo
+    rain_expected = any(word in condition for word in 
+                       ['rain', 'drizzle', 'thunderstorm', 'shower'])
+    
+    # Stress level calculate karo
+    if stressed > 30 or healthy < 20:
+        crop_stress = "high"
+    elif stressed > 15 or healthy < 35:
+        crop_stress = "moderate"
+    else:
+        crop_stress = "low"
+    
+    # Base water amount — crop type se
+    if water_need == "high":
+        base_water = 55  # mm
+    elif water_need == "moderate":
+        base_water = 35  # mm
+    else:
+        base_water = 20  # mm
+    
+    # Temperature adjustment
+    if temp > 38:
+        base_water += 10
+    elif temp > 33:
+        base_water += 5
+    
+    # Humidity adjustment
+    if humidity < 25:
+        base_water += 10
+    elif humidity < 40:
+        base_water += 5
+    
+    # Decision
+    if rain_expected:
+        return {
+            "decision": "SKIP",
+            "water_amount_mm": 0,
+            "reason": "Barish expected hai — irrigation mat karo",
+            "crop": crop,
+            "crop_stress": crop_stress
+        }
+    elif crop_stress == "low" and humidity > 50:
+        return {
+            "decision": "MONITOR",
+            "water_amount_mm": 0,
+            "reason": "Fasal healthy hai — 2 din baad check karo",
+            "crop": crop,
+            "crop_stress": crop_stress
+        }
+    else:
+        return {
+            "decision": "IRRIGATE",
+            "water_amount_mm": base_water,
+            "reason": f"{crop.capitalize()} ko {base_water}mm paani chahiye",
+            "crop": crop,
+            "crop_stress": crop_stress
+        }
