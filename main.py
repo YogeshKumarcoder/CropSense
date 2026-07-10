@@ -152,3 +152,41 @@ def get_irrigation_recommendation(request: IrrigationRequest):
         "weather_data": weather_data,
         "irrigation": recommendation
     }
+
+class MultiFieldRequest(BaseModel):
+    fields: list  # List of bboxes
+    time_start: str
+    time_end: str
+
+@app.post("/compare-fields")
+def compare_fields(request: MultiFieldRequest):
+    results = []
+    
+    for i, bbox in enumerate(request.fields):
+        lat = (bbox[1] + bbox[3]) / 2
+        lon = (bbox[0] + bbox[2]) / 2
+        
+        ndvi_data = get_ndvi(bbox, request.time_start, request.time_end)
+        weather_data = get_weather(lat, lon)
+        stress_data = calculate_stress_index(ndvi_data, weather_data)
+        
+        results.append({
+            "field_number": i + 1,
+            "bbox": bbox,
+            "healthy_percentage": ndvi_data['healthy_percentage'],
+            "stressed_percentage": ndvi_data['stressed_percentage'],
+            "temperature": weather_data['temperature'],
+            "humidity": weather_data['humidity'],
+            "stress_index": stress_data['crop_stress_index'],
+            "alert_level": stress_data['alert_level'],
+            "recommendation": stress_data['recommendation']
+        })
+    
+    # Sort by stress index — most stressed pehle
+    results.sort(key=lambda x: x['stress_index'], reverse=True)
+    
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "total_fields": len(results),
+        "fields": results
+    }
