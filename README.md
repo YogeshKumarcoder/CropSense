@@ -1,17 +1,18 @@
 # 🌾 CropSense — Real-time Agricultural Intelligence Platform
 
-> Multimodal ML pipeline integrating Sentinel-2 satellite imagery 
-> with live weather data for real-time crop health monitoring
+> Production-grade multimodal ML system for real-time crop health 
+> monitoring, yield prediction, and irrigation recommendations
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-1.0-green)
 ![React](https://img.shields.io/badge/React-18-blue)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange)
 ![Sentinel-2](https://img.shields.io/badge/Sentinel--2-ESA-orange)
 
 ## 🎯 Problem Statement
 Traditional crop monitoring requires physical field visits — 
 expensive, time-consuming, and not scalable. CropSense provides 
-**real-time agricultural intelligence** using satellite imagery 
+real-time agricultural intelligence using satellite imagery 
 and live weather data fusion.
 
 ## 🏗️ System Architecture
@@ -19,37 +20,60 @@ and live weather data fusion.
 ![CropSense Architecture](architecture.png)
 
 ## ✨ Features
-- 🛰️ **Real Sentinel-2 Data** — ESA Copernicus satellite imagery
-- 🌿 **NDVI Analysis** — Pixel-wise crop health classification
-- 🌤️ **Live Weather Integration** — Real-time OpenWeatherMap API
-- 🧠 **Multimodal ML Fusion** — Satellite + Weather → Crop Stress Index
-- 📊 **Time Series Analysis** — 12-month agricultural calendar
-- 🗺️ **Interactive Dashboard** — Search + Draw region on world map
-- ⚡ **REST API** — FastAPI with Swagger documentation
+
+### 1. 🛰️ Real-time Crop Health Monitoring
+- Sentinel-2 satellite imagery (ESA Copernicus)
+- NDVI-based pixel-wise crop health classification
+- Green/Yellow/Red health zones
+
+### 2. 🧠 Multimodal ML Fusion
+- Satellite NDVI + Live weather data fusion
+- Weighted Crop Stress Index
+- HEALTHY / MODERATE / HIGH alert levels
+
+### 3. 🔮 LSTM Yield Prediction
+- Trained on 4 years real satellite data (2022-2024)
+- Early stopping to prevent overfitting
+- Validated against real crop calendar — Mehrawal, UP
+
+### 4. 💧 Irrigation Recommendation Engine
+- Crop-specific water requirements (14 crops)
+- Domain knowledge from real farming experience
+- Recommendations in mm with reasoning
+
+### 5. 📊 Multi-field Comparison
+- Compare multiple regions simultaneously
+- Sorted by stress index — most critical first
+- Side-by-side health metrics table
+
+### 6. 🗺️ Interactive Dashboard
+- World map with search by name
+- Draw custom region on map
+- Real-time results
 
 ## 🔬 ML Pipeline
+
 | Component | Technology |
 |---|---|
 | Satellite Data | Sentinel-2 L2A (ESA Copernicus) |
 | Spectral Analysis | NDVI (NIR-Red)/(NIR+Red) |
 | Weather Data | OpenWeatherMap API |
 | Fusion Model | Weighted multimodal combination |
+| Yield Prediction | LSTM (50 units) + Early Stopping |
 | Backend | FastAPI + Python |
 | Frontend | React + Leaflet.js |
 
-## 🤖 ML Models
+## 🚀 API Endpoints
 
-### 1. Multimodal Fusion Model
-- Weighted combination: Satellite (60%) + Weather (40%)
-- Output: Crop Stress Index
+| Endpoint | Method | Description |
+|---|---|---|
+| `/analyze` | POST | Real-time crop health analysis |
+| `/predict` | POST | LSTM next month yield prediction |
+| `/irrigation` | POST | Crop-specific irrigation recommendation |
+| `/compare-fields` | POST | Multi-field comparison |
 
-### 2. LSTM Yield Prediction
-- Training data: 4 years Sentinel-2 (2022-2024)
-- Architecture: LSTM(50) + Dense(1)
-- Technique: Early stopping (overfitting prevention)
-- Validated against real crop calendar data
+## 📊 Sample Output
 
-## 📊 Sample Output — Mehrawal, Aligarh (Nov 2024)
 ```json
 {
   "satellite_data": {
@@ -67,7 +91,22 @@ and live weather data fusion.
 }
 ```
 
+## 🌍 Real-World Validation
+- Validated on real agricultural land — Mehrawal, Aligarh, UP
+- Crop calendar validated by domain expert (farming background)
+- July 2026 prediction: 7.3% — confirmed by ground truth
 
+## ⚠️ Known Limitations
+
+### Disease Detection
+Satellite-based disease detection is currently limited by:
+- Sentinel-2 resolution (10m/pixel) — insufficient for 
+  field-level disease identification
+- Detection lag — by the time NDVI drops, crop damage 
+  is already severe
+
+**Proposed solution:** Integration with ground-level IoT 
+sensors or drone imagery for early disease detection
 
 ## 🚀 Quick Start
 
@@ -85,12 +124,9 @@ npm install
 npm start
 ```
 
-## 🌍 Real-World Impact
-- Covers **any region worldwide** via interactive map
-- Processes **real ESA satellite data** — not synthetic
-- Validated on **Mehrawal village, Aligarh, UP** — actual agricultural land
-- Applicable to **Google Earth Engine** scale deployments
+## 🎥 Demo
+[![CropSense Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 ## 👨‍💻 Author
 **Yogesh Kumar** — ML Engineer  
-`EfficientNet • FastAPI • React • Geospatial ML • Transfer Learning`
+`Python • FastAPI • React • TensorFlow • Geospatial ML • LSTM`
